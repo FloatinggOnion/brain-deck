@@ -14,7 +14,13 @@ const page = async (props: Props) => {
   }
 
   return (
-    <div>Hello {data.user.email}</div>
+    <div>
+      Hello {data.user.email}
+      <h1>Purchase our product</h1>
+      <a href="https://buy.stripe.com/test_6oEbKm091aL19occMM" target="_blank" rel="noopener noreferrer">
+        Pay Now
+      </a>
+    </div>
   )
 }
 
