@@ -4,6 +4,7 @@ import React from "react";
 import axios from "axios";
 
 import FlashCard from "@/components/FlashCard";
+import { redirect } from "next/navigation";
 
 type Props = {};
 
@@ -12,9 +13,16 @@ interface Message {
 	back: string;
 }
 
+interface Flashcard {
+	front: string;
+	back: string;
+	user_id: string;
+	collection_name: string;
+}
+
 const Page = (props: Props) => {
 	const [input, setInput] = React.useState("");
-	const [message, setMessage] = React.useState<Message[]>([]);
+	const [messages, setMessages] = React.useState<Message[]>([]);
 	const [isFrontArray, setIsFrontArray] = React.useState<boolean[]>([]);
 
 	const handleSend = async () => {
@@ -32,8 +40,10 @@ const Page = (props: Props) => {
 					timeoutErrorMessage: "Request timed out",
 				});
 				// console.log(res?.data?.flashcards);
-				setMessage(res?.data?.flashcards);
-				setIsFrontArray(new Array(res?.data?.flashcards.length).fill(true)); // Initialize isFrontArray
+				setMessages(res?.data?.flashcards);
+				setIsFrontArray(
+					new Array(res?.data?.flashcards.length).fill(true)
+				); // Initialize isFrontArray
 			} catch (error) {
 				console.error("Error querying:", error);
 				// setResult("Error querying");
@@ -48,6 +58,22 @@ const Page = (props: Props) => {
 			return newIsFrontArray;
 		});
 	};
+
+	const handleSave = async (collection_name: string) => {
+        try {
+          const res = await axios.post("/api/supabase", {
+            flashcards: messages.map((msg) => ({
+              front: msg.front,
+              back: msg.back,
+              collection_name: collection_name,
+            })),
+          });
+          const { flashcards } = res.data;
+          console.log("Saved flashcards:", flashcards);
+        } catch (error) {
+          console.error("Error querying:", error);
+        }
+      };
 
 	return (
 		<div className="flex flex-col items-center justify-between min-h-screen gap-12">
@@ -68,15 +94,22 @@ const Page = (props: Props) => {
 				</button>
 			</div>
 
+			{messages.length > 0 && (<button
+				className="bg-[#00ABE4] text-white p-2 w-24 hover:bg-[#0097D3] rounded-lg"
+				onClick={handleSave.bind(null, "Flashcards")}
+			>
+				Save
+			</button>)}
+
 			<div className="grid grid-cols-3 w-[70%] gap-4">
-				{message &&
-					message.map((msg, index) => (
+				{messages &&
+					messages.map((msg, index) => (
 						<FlashCard
-                        key={index}
-                        header={isFrontArray[index] ? "Question" : "Answer"}
-                        content={isFrontArray[index] ? msg.front : msg.back}
-                        onclick={() => handleCardClick(index)}
-                    />
+							key={index}
+							header={isFrontArray[index] ? "Question" : "Answer"}
+							content={isFrontArray[index] ? msg.front : msg.back}
+							onclick={() => handleCardClick(index)}
+						/>
 					))}
 			</div>
 		</div>
