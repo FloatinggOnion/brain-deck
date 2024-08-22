@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/utils/supabase/server'
 import { SupabaseClient } from '@supabase/supabase-js';
+import Link from 'next/link';
 
 type Props = {}
 
@@ -38,18 +39,20 @@ const page = async (props: Props) => {
   const collections = await getUserCollections(data?.user.id);
 
   return (
-    <div>
-      Hello {data.user.email}
-      <h1>Purchase our product</h1>
+    <div className='flex flex-col justify-center px-12 h-full'>
+      <h1 className='font-extrabold text-3xl p-4'>Hello {data.user.email}</h1>
+      {/* <h1>Purchase our product</h1>
       <a href="https://buy.stripe.com/test_6oEbKm091aL19occMM" target="_blank" rel="noopener noreferrer">
         Pay Now
-      </a>
+      </a> */}
       {collections && (
-        <div>
-          <h2>Your collections</h2>
-          <ul>
+        <div className='flex flex-col justify-center p-4 gap-4'>
+          <h2 className='font-bold text-xl'>Your collections</h2>
+          <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
             {collections.map((collection) => (
-              <li key={collection}>{collection}</li>
+              <Link key={collection} href={`/collections/${collection}`}>
+                <li className='p-6 border shadow-lg font-semibold flex justify-center'>{collection}</li>
+              </Link>
             ))}
           </ul>
           </div>

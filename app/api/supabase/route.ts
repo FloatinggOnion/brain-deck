@@ -1,11 +1,43 @@
 // app/api/supabase/route.ts
 import { createClient } from "@/utils/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 
 interface Flashcard {
   front: string;
   back: string;
   user_id: string;
   collection_name: string;
+}
+
+export async function GET(request: NextRequest) {
+  const supabase = createClient();
+  const searchParams = request.nextUrl.searchParams;
+  const collectionName = searchParams.get('collectionName');
+
+  if (!collectionName) {
+    return NextResponse.json({ error: "Collection name is required" }, { status: 400 });
+  }
+
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+
+    const { data: flashcards, error: flashcardsError } = await supabase
+      .from("flashcards")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .eq("collection_name", collectionName);
+
+    if (flashcardsError) throw flashcardsError;
+
+    return NextResponse.json({ flashcards }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching flashcards:", error);
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
